@@ -17,6 +17,9 @@ namespace eKnjiznica.Data.Repositories
         void Update(Product product);
         void Remove(Product product);
         bool Any(int id);
+
+        void SetCategoryRelationships(List<ProductCategory> relations);
+        void RemoveCategoryRelatiionships(Product product);
     }
 
     public class ProductRepository : IProductRepository
@@ -51,7 +54,9 @@ namespace eKnjiznica.Data.Repositories
         public Task<Product> FindOne(int id)
         {
             return _context.Products
-                   .FirstOrDefaultAsync(m => m.Id == id);
+                    .Include(p => p.ProductCategories)
+                        .ThenInclude(pc => pc.Category)
+                    .FirstOrDefaultAsync(m => m.Id == id);
         }
 
         public void Remove(Product product)
@@ -59,9 +64,25 @@ namespace eKnjiznica.Data.Repositories
             _context.Remove(product);
         }
 
+        public void RemoveCategoryRelatiionships(Product product)
+        {
+            foreach (var item in product.ProductCategories)
+            {
+                _context.Remove(item);
+            }
+        }
+
         public Task SaveChangesAsync()
         {
             return _context.SaveChangesAsync();
+        }
+
+        public void SetCategoryRelationships(List<ProductCategory> relations)
+        {
+            foreach (var item in relations)
+            {
+                _context.Add(item);
+            }
         }
 
         public void Update(Product product)

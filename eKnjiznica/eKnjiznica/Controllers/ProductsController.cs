@@ -1,23 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using eKnjiznica.Data;
 using eKnjiznica.Data.Repositories;
 using eKnjiznica.Data.Entities;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace eKnjiznica.Controllers
 {
+    public class SelectViewModel
+    {
+        public int Id;
+        public string DisplayName;
+        public bool Selected;
+    }
+
+    public class ProductEditViewModel
+    {
+        public Product Product { get; set; }
+        public List<SelectViewModel> Categories { get; set; } = new List<SelectViewModel>();
+    }
+
     public class ProductsController : Controller
     {
         private readonly IProductRepository _repository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public ProductsController(IProductRepository context)
+        public ProductsController(IProductRepository context, ICategoryRepository categoryRepository)
         {
             _repository = context;
+            _categoryRepository = categoryRepository;
         }
 
         // GET: Products
@@ -75,12 +87,44 @@ namespace eKnjiznica.Controllers
                 return NotFound();
             }
 
+            // find the product
             var product = await _repository.FindOne(id.Value);
             if (product == null)
             {
                 return NotFound();
             }
-            return View(product);
+
+            // create a view model to contain all the data we want to display
+            var vm = new ProductEditViewModel();
+
+            vm.Product = product;
+
+            // get all categories
+            var allCategories = await _categoryRepository.FindAllAsync();
+            foreach (var category in allCategories)
+            {
+                var model = new SelectViewModel();
+
+                model.Id = category.Id;
+                model.DisplayName = category.Name;
+                model.Selected = false; 
+
+                // put all the categories in the view model since we need to display them
+                vm.Categories.Add(model);
+            }
+
+            // iterate through all categories in the product
+            foreach (var selectedCategory in product.ProductCategories)
+            {
+                var categorySelection = vm.Categories.FirstOrDefault(m => m.Id == selectedCategory.CategoryId);
+                if (categorySelection != null)
+                {
+                    // mark the view model categories as "selected" if the product has them 
+                    categorySelection.Selected = true;
+                }
+            }
+
+            return View(vm);
         }
 
         // POST: Products/Edit/5
@@ -99,7 +143,34 @@ namespace eKnjiznica.Controllers
             {
                 try
                 {
+                    product = await _repository.FindOne(id);
+
+                    if (product.ProductCategories.Count() > 0)
+                    {
+                        _repository.RemoveCategoryRelatiionships(product);
+                        await _repository.SaveChangesAsync();
+                    }
+
+                    var allCategories = await _categoryRepository.FindAllAsync();
+                    var allRelationships = new List<ProductCategory>();
+                    foreach (var category in allCategories)
+                    {
+                        if (Request.Form.ContainsKey("Category-" + category.Id))
+                        {
+                            if (Request.Form["Category-" + category.Id] == "on")
+                            {
+                                allRelationships.Add(new ProductCategory
+                                {
+                                    CategoryId = category.Id,
+                                    ProductId = product.Id
+                                });
+                            }
+                        }
+                    }
+
                     _repository.Update(product);
+                    _repository.SetCategoryRelationships(allRelationships);
+
                     await _repository.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
