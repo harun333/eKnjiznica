@@ -16,12 +16,5 @@ namespace eKnjiznica.Controllers
         {
             return View();
         }
-
-        public IActionResult ProductList()
-        {
-            var allProducts = _productRepository.FindAll();
-
-            return View(allProducts);
-        }
     }
 }
