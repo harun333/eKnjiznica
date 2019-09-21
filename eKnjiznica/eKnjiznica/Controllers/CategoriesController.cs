@@ -6,27 +6,27 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using eKnjiznica.Data;
-using eKnjiznica.Data.Repositories;
 using eKnjiznica.Data.Entities;
+using eKnjiznica.Data.Repositories;
 
 namespace eKnjiznica.Controllers
 {
-    public class ProductsController : Controller
+    public class CategoriesController : Controller
     {
-        private readonly IProductRepository _repository;
+        private readonly ICategoryRepository _repository;
 
-        public ProductsController(IProductRepository context)
+        public CategoriesController(ICategoryRepository context)
         {
             _repository = context;
         }
 
-        // GET: Products
+        // GET: Categories
         public async Task<IActionResult> Index()
         {
             return View(await _repository.FindAllAsync());
         }
 
-        // GET: Products/Details/5
+        // GET: Categories/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -34,40 +34,38 @@ namespace eKnjiznica.Controllers
                 return NotFound();
             }
 
-            var product = await _repository.FindOne(id.Value);
-             
-            if (product == null)
+            var category = await _repository.FindOne(id.Value);
+            if (category == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(category);
         }
 
-        // GET: Products/Create
+        // GET: Categories/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Products/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // POST: Categories/Create
+        // To protect from overposting attacks, please enable the specific properties you wanC:\Users\stola\source\repos\ITOdjel2\eKnjiznica\eKnjiznica\Controllers\CategoriesController.cst to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
         {
             if (ModelState.IsValid)
             {
-
-                _repository.Add(product);
+                _repository.Add(category);
                 await _repository.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(category);
         }
 
-        // GET: Products/Edit/5
+        // GET: Categories/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -75,22 +73,22 @@ namespace eKnjiznica.Controllers
                 return NotFound();
             }
 
-            var product = await _repository.FindOne(id.Value);
-            if (product == null)
+            var category = await _repository.FindOne(id.Value);
+            if (category == null)
             {
                 return NotFound();
             }
-            return View(product);
+            return View(category);
         }
 
-        // POST: Products/Edit/5
+        // POST: Categories/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
         {
-            if (id != product.Id)
+            if (id != category.Id)
             {
                 return NotFound();
             }
@@ -99,12 +97,12 @@ namespace eKnjiznica.Controllers
             {
                 try
                 {
-                    _repository.Update(product);
+                    _repository.Update(category);
                     await _repository.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!CategoryExists(category.Id))
                     {
                         return NotFound();
                     }
@@ -115,10 +113,10 @@ namespace eKnjiznica.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(category);
         }
 
-        // GET: Products/Delete/5
+        // GET: Categories/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -126,27 +124,27 @@ namespace eKnjiznica.Controllers
                 return NotFound();
             }
 
-            var product = await _repository.FindOne(id.Value);             
-            if (product == null)
+            var category = await _repository.FindOne(id.Value);
+            if (category == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(category);
         }
 
-        // POST: Products/Delete/5
+        // POST: Categories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _repository.FindOne(id);
-            _repository.Remove(product);
+            var category = await _repository.FindOne(id);
+            _repository.Remove(category);
             await _repository.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProductExists(int id)
+        private bool CategoryExists(int id)
         {
             return _repository.Any(id);
         }
