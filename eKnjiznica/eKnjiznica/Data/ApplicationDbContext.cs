@@ -13,5 +13,23 @@ namespace eKnjiznica.Data
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<ProductCategory>()
+                .HasKey(bc => new { bc.ProductId, bc.CategoryId });
+
+            modelBuilder.Entity<ProductCategory>()
+                .HasOne(bc => bc.Product)
+                .WithMany(b => b.ProductCategories)
+                .HasForeignKey(bc => bc.ProductId);
+
+            modelBuilder.Entity<ProductCategory>()
+                .HasOne(bc => bc.Category)
+                .WithMany(c => c.ProductCategories)
+                .HasForeignKey(bc => bc.CategoryId);
+        }
     }
 }
