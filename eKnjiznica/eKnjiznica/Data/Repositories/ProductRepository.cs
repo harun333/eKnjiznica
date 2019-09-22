@@ -56,7 +56,7 @@ namespace eKnjiznica.Data.Repositories
 
         public Task<List<ProductCategory>> FindAllInCategories(List<Category> filterCategories)
         {
-            return _context.ProductCategories.Where(pc => filterCategories.Contains(pc.Category)).ToListAsync();
+            return _context.ProductCategories.Include(pc => pc.Product).Where(pc => filterCategories.Contains(pc.Category)).ToListAsync();
         }
 
         //public Task<List<Product>> FindByCategory(List<int> categoires)
