@@ -20,6 +20,9 @@ namespace eKnjiznica.Data.Repositories
 
         void SetCategoryRelationships(List<ProductCategory> relations);
         void RemoveCategoryRelatiionships(Product product);
+        Task<List<ProductCategory>> FindAllInCategories(List<Category> filterCategories);
+
+        //Task<List<Product>> FindByCategory(List<int> categoires);
     }
 
     public class ProductRepository : IProductRepository
@@ -50,6 +53,18 @@ namespace eKnjiznica.Data.Repositories
         {
             return _context.Products.ToListAsync();
         }
+
+        public Task<List<ProductCategory>> FindAllInCategories(List<Category> filterCategories)
+        {
+            return _context.ProductCategories.Where(pc => filterCategories.Contains(pc.Category)).ToListAsync();
+        }
+
+        //public Task<List<Product>> FindByCategory(List<int> categoires)
+        //{
+
+        //    return _context.Products
+        //        .Include(p => p.ProductCategories)
+        //}
 
         public Task<Product> FindOne(int id)
         {

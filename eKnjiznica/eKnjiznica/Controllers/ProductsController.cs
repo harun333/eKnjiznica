@@ -5,6 +5,8 @@ using eKnjiznica.Data.Repositories;
 using eKnjiznica.Data.Entities;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
+using eKnjiznica.ViewModels;
 
 namespace eKnjiznica.Controllers
 {
@@ -21,6 +23,7 @@ namespace eKnjiznica.Controllers
         public List<SelectViewModel> Categories { get; set; } = new List<SelectViewModel>();
     }
 
+    //TODO: [Authorize("ADMIN")]
     public class ProductsController : Controller
     {
         private readonly IProductRepository _repository;
@@ -35,7 +38,71 @@ namespace eKnjiznica.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            return View(await _repository.FindAllAsync());
+            // TODO: filter products before giving them to the list
+            //var queryCollection = Request.Query;
+            //foreach (var item in queryCollection)
+            //{
+            //    //za ovaj url https://docs.microsoft.com/...?view=aspnetcore-2.2&tabs=visual-studio
+            //    // prvi krug    
+            //    //item.Key -> view
+            //    //item.value ->aspnetcore - 2.2
+            //    // drugi krug
+            //    //item.Key -> tabs
+            //    //item.value ->visual-studio
+
+            //    // http://localhost:port/products?asdasdasd
+            //}
+
+            var filteredProdcuts = await _repository.FindAllAsync();
+            var allCategories = await _categoryRepository.FindAllAsync();
+
+            var vm = new SearchViewModel
+            {
+                Categories = allCategories,
+                Products = filteredProdcuts
+            };
+
+            return View(vm);
+        }
+
+        
+
+        [HttpPost]
+        public async Task<IActionResult> Index(List<SelectViewModel> categories)
+        {
+            // nadjemo kategorije koje je korisnik izabrao
+            var allCategories = await _categoryRepository.FindAllAsync();
+            var filterCategories = new List<Category>();
+            foreach (var category in allCategories)
+            {
+                if (Request.Form.ContainsKey("Category-" + category.Id))
+                {
+                    if (Request.Form["Category-" + category.Id] == "on")
+                    {
+                        filterCategories.Add(category);
+                    }
+                }
+            }
+
+            // nadjemo medju-tabelu koja sadrzi kategorije i produkte na osnovu izabranih
+            var filteredProdcutCategoriess = await _repository.FindAllInCategories(filterCategories);
+            var filteredProducts = new List<Product>();
+
+            // uzmemo samo produkte
+            foreach (var item in filteredProdcutCategoriess)
+            {
+                filteredProducts.Add(item.Product);
+            }
+
+            // napravimo view model
+            var vm = new SearchViewModel
+            {
+                Categories = allCategories,
+                Products = filteredProducts
+            };
+
+            // ubacimo ih u view
+            return View(vm);
         }
 
         // GET: Products/Details/5

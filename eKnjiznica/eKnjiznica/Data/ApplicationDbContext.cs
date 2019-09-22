@@ -1,10 +1,12 @@
 ﻿using eKnjiznica.Data.Entities;
+using eKnjiznica.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace eKnjiznica.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -13,10 +15,20 @@ namespace eKnjiznica.Data
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<ProductCategory> ProductCategories { get; set; }
+        public DbSet<Client> Clients { get; set; }
+      
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<ApplicationUser>().ToTable("AspNetUsers");
+            foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+            {
+                relationship.DeleteBehavior = DeleteBehavior.Restrict;
+            }
 
             modelBuilder.Entity<ProductCategory>()
                 .HasKey(bc => new { bc.ProductId, bc.CategoryId });
@@ -31,5 +43,7 @@ namespace eKnjiznica.Data
                 .WithMany(c => c.ProductCategories)
                 .HasForeignKey(bc => bc.CategoryId);
         }
+
+        
     }
 }
