@@ -62,24 +62,27 @@ namespace eKnjiznica.Controllers
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var savedUser = await _userManager.FindByEmailAsync("Admin@hotmail.com");
+
+                var result = await _signInManager.PasswordSignInAsync(savedUser, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     var user = await _userManager.FindByEmailAsync(model.Email);
                     if (await _userManager.IsInRoleAsync(user, "Admin"))
-                        return LocalRedirect("~/Admin");
+                        return RedirectToAction("Index", "Admin");
                     else
-                        return LocalRedirect("~/Client");
-                    //return RedirectToAction("Index", "Home", new { area = "SaloonOwner" });
+                        return RedirectToAction("Index", "Products");
                 }
                 else
                 {
                     ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return View(model);
+                    return View("Index",model);
                 }
+
+                
             }
             // If we got this far, something failed, redisplay form
-            return View(model);
+            return View("Index", model);
         }
 
         [HttpGet]
@@ -110,7 +113,7 @@ namespace eKnjiznica.Controllers
                     await _userManager.AddToRoleAsync(user, "Client");
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     _logger.LogInformation("User created a new account with password.");
-                    return RedirectToAction("Index");
+                    return RedirectToAction("Index", "Products");
                 }
                 AddErrors(result);
             }
@@ -130,22 +133,6 @@ namespace eKnjiznica.Controllers
             return RedirectToAction("Login");
 
         }
-
-        //[HttpPost]
-
-        //[ValidateAntiForgeryToken]
-
-        //public async Task<IActionResult> Logout(string url="")
-
-        //{
-
-        //    await _signInManager.SignOutAsync();
-
-        //    _logger.LogInformation("User logged out.");
-
-        //    return RedirectToAction(nameof(HomeController.Index), "Home");
-
-        //}
         private void AddErrors(IdentityResult result)
         {
             foreach (var error in result.Errors)
@@ -161,7 +148,7 @@ namespace eKnjiznica.Controllers
             }
             else
             {
-                return RedirectToAction(nameof(HomeController.IndexAsync), "Home");
+                return RedirectToAction(nameof(HomeController.Index), "Home");
             }
         }
         private async Task<bool> IsAdminAsync(string username)

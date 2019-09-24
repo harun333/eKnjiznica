@@ -43,6 +43,10 @@ namespace eKnjiznica.Data
                 .WithMany(c => c.ProductCategories)
                 .HasForeignKey(bc => bc.CategoryId);
         }
+      
+
+
+        public DbSet<eKnjiznica.Data.Entities.Order> Order { get; set; }
 
         
     }

@@ -1,8 +1,5 @@
 ﻿using eKnjiznica.Data.Entities;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace eKnjiznica.ViewModels
 {
@@ -10,5 +7,6 @@ namespace eKnjiznica.ViewModels
     {
         public List<Category> Categories;
         public List<Product> Products;
+        public bool IsAdmin;
     }
 }

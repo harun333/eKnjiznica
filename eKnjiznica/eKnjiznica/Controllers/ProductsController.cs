@@ -10,67 +10,36 @@ using eKnjiznica.ViewModels;
 
 namespace eKnjiznica.Controllers
 {
-    public class SelectViewModel
-    {
-        public int Id;
-        public string DisplayName;
-        public bool Selected;
-    }
-
-    public class ProductEditViewModel
-    {
-        public Product Product { get; set; }
-        public List<SelectViewModel> Categories { get; set; } = new List<SelectViewModel>();
-    }
-
-    //TODO: [Authorize("ADMIN")]
     public class ProductsController : Controller
     {
         private readonly IProductRepository _repository;
         private readonly ICategoryRepository _categoryRepository;
 
-        public ProductsController(IProductRepository context, ICategoryRepository categoryRepository)
+        public ProductsController(
+            IProductRepository context,
+            ICategoryRepository categoryRepository)
         {
             _repository = context;
             _categoryRepository = categoryRepository;
         }
 
-        // GET: Products
         public async Task<IActionResult> Index()
         {
-            // TODO: filter products before giving them to the list
-            //var queryCollection = Request.Query;
-            //foreach (var item in queryCollection)
-            //{
-            //    //za ovaj url https://docs.microsoft.com/...?view=aspnetcore-2.2&tabs=visual-studio
-            //    // prvi krug    
-            //    //item.Key -> view
-            //    //item.value ->aspnetcore - 2.2
-            //    // drugi krug
-            //    //item.Key -> tabs
-            //    //item.value ->visual-studio
-
-            //    // http://localhost:port/products?asdasdasd
-            //}
-
             var filteredProdcuts = await _repository.FindAllAsync();
             var allCategories = await _categoryRepository.FindAllAsync();
-
             var vm = new SearchViewModel
             {
                 Categories = allCategories,
-                Products = filteredProdcuts
+                Products = filteredProdcuts,
+                IsAdmin = User.IsInRole("Admin")
             };
 
             return View(vm);
         }
 
-        
-
         [HttpPost]
         public async Task<IActionResult> Index(List<SelectViewModel> categories)
         {
-            // nadjemo kategorije koje je korisnik izabrao
             var allCategories = await _categoryRepository.FindAllAsync();
             var filterCategories = new List<Category>();
             foreach (var category in allCategories)
@@ -84,28 +53,23 @@ namespace eKnjiznica.Controllers
                 }
             }
 
-            // nadjemo medju-tabelu koja sadrzi kategorije i produkte na osnovu izabranih
             var filteredProdcutCategoriess = await _repository.FindAllInCategories(filterCategories);
             var filteredProducts = new List<Product>();
 
-            // uzmemo samo produkte
             foreach (var item in filteredProdcutCategoriess)
             {
                 filteredProducts.Add(item.Product);
             }
 
-            // napravimo view model
             var vm = new SearchViewModel
             {
                 Categories = allCategories,
                 Products = filteredProducts
             };
 
-            // ubacimo ih u view
             return View(vm);
         }
 
-        // GET: Products/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -120,25 +84,28 @@ namespace eKnjiznica.Controllers
                 return NotFound();
             }
 
-            return View(product);
+            var vm = new ProductDetailsViewModel
+            {
+                Product = product,
+                IsAdmin = User.IsInRole("Admin")
+            };
+
+            return View(vm);
         }
 
-        // GET: Products/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Products/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] Product product)
         {
             if (ModelState.IsValid)
             {
-
                 _repository.Add(product);
                 await _repository.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -146,7 +113,7 @@ namespace eKnjiznica.Controllers
             return View(product);
         }
 
-        // GET: Products/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -154,39 +121,35 @@ namespace eKnjiznica.Controllers
                 return NotFound();
             }
 
-            // find the product
             var product = await _repository.FindOne(id.Value);
             if (product == null)
             {
                 return NotFound();
             }
 
-            // create a view model to contain all the data we want to display
-            var vm = new ProductEditViewModel();
+            var vm = new ProductEditViewModel
+            {
+                Product = product
+            };
 
-            vm.Product = product;
-
-            // get all categories
             var allCategories = await _categoryRepository.FindAllAsync();
             foreach (var category in allCategories)
             {
-                var model = new SelectViewModel();
+                var model = new SelectViewModel
+                {
+                    Id = category.Id,
+                    DisplayName = category.Name,
+                    Selected = false
+                };
 
-                model.Id = category.Id;
-                model.DisplayName = category.Name;
-                model.Selected = false; 
-
-                // put all the categories in the view model since we need to display them
                 vm.Categories.Add(model);
             }
 
-            // iterate through all categories in the product
             foreach (var selectedCategory in product.ProductCategories)
             {
                 var categorySelection = vm.Categories.FirstOrDefault(m => m.Id == selectedCategory.CategoryId);
                 if (categorySelection != null)
                 {
-                    // mark the view model categories as "selected" if the product has them 
                     categorySelection.Selected = true;
                 }
             }
@@ -194,9 +157,7 @@ namespace eKnjiznica.Controllers
             return View(vm);
         }
 
-        // POST: Products/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Product product)
@@ -256,7 +217,7 @@ namespace eKnjiznica.Controllers
             return View(product);
         }
 
-        // GET: Products/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -269,11 +230,11 @@ namespace eKnjiznica.Controllers
             {
                 return NotFound();
             }
-
+            
             return View(product);
         }
 
-        // POST: Products/Delete/5
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
