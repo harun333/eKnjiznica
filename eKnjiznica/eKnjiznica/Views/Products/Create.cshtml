@@ -1,4 +1,4 @@
-﻿@model eKnjiznica.ViewModels.ProductEditViewModel
+﻿@model eKnjiznica.Data.Entities.Product
 
 @{
     ViewData["Title"] = "Create";
@@ -13,29 +13,10 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Product.Name" class="control-label"></label>
-                <input asp-for="Product.Name" class="form-control" />
-                <span asp-validation-for="Product.Name" class="text-danger"></span>
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Product.Price" class="control-label"></label>
-                <input asp-for="Product.Price" class="form-control" />
-                <span asp-validation-for="Product.Price" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Product.Description" class="control-label"></label>
-                <input asp-for="Product.Description" class="form-control" />
-                <span asp-validation-for="Product.Description" class="text-danger"></span>
-            </div>
-            @*@foreach (var category in Model.Categories)
-            {
-                <div>
-                    <label>
-                        @category.DisplayName
-                    </label>
-                    <input type="checkbox" name="Category-@category.Id" checked="@category.Selected" />
-                </div>
-            }*@
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>

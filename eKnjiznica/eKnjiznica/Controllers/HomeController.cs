@@ -6,14 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using eKnjiznica.Models;
 using Microsoft.AspNetCore.Identity;
 using eKnjiznica.Data;
-using eKnjiznica.Data.Entities;
-using System.Collections.Generic;
 
 namespace eKnjiznica.Controllers
 {
     public class HomeController : Controller
     {
-        
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
@@ -27,7 +24,6 @@ namespace eKnjiznica.Controllers
             _context = context;
             _roleManager = roleManager;
         }
-       
 
         public async Task<IActionResult> Index()
         {
@@ -76,7 +72,7 @@ namespace eKnjiznica.Controllers
 
                 if (!result.Succeeded)
                 {
-                    throw new Exception("Error");
+                    throw new Exception("Error");                   
                 }
 
                 await _userManager.AddToRoleAsync(user, "Admin");

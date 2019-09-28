@@ -8,12 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using eKnjiznica.Data;
 using eKnjiznica.Data.Entities;
 using eKnjiznica.Data.Repositories;
-using Microsoft.AspNetCore.Authorization;
 
 namespace eKnjiznica.Controllers
 {
-
-    [Authorize]
     public class OrdersController : Controller
     {
         private readonly IOrderRepository _repository;

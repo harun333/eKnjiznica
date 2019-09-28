@@ -129,29 +129,6 @@ namespace eKnjiznica.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("eKnjiznica.Data.Entities.Cart", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("ProductId");
-
-                    b.Property<string>("ProductName");
-
-                    b.Property<float>("bill");
-
-                    b.Property<float>("price");
-
-                    b.Property<int>("qty");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Carts");
-                });
-
             modelBuilder.Entity("eKnjiznica.Data.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -175,11 +152,7 @@ namespace eKnjiznica.Data.Migrations
 
                     b.Property<string>("Name");
 
-                    b.Property<string>("applicationUserId");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("applicationUserId");
 
                     b.ToTable("Clients");
                 });
@@ -199,40 +172,13 @@ namespace eKnjiznica.Data.Migrations
                     b.ToTable("Order");
                 });
 
-            modelBuilder.Entity("eKnjiznica.Data.Entities.OrderItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("OrderId");
-
-                    b.Property<int>("ProductId");
-
-                    b.Property<int>("Quantity");
-
-                    b.Property<float>("UnitPrice");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("OrderItem");
-                });
-
             modelBuilder.Entity("eKnjiznica.Data.Entities.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Description");
-
                     b.Property<string>("Name");
-
-                    b.Property<float>("Price");
 
                     b.HasKey("Id");
 
@@ -261,8 +207,6 @@ namespace eKnjiznica.Data.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
-
-                    b.Property<int>("Credit");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256);
@@ -347,35 +291,6 @@ namespace eKnjiznica.Data.Migrations
                     b.HasOne("eKnjiznica.Models.ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("eKnjiznica.Data.Entities.Cart", b =>
-                {
-                    b.HasOne("eKnjiznica.Data.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("eKnjiznica.Data.Entities.Client", b =>
-                {
-                    b.HasOne("eKnjiznica.Models.ApplicationUser", "applicationUser")
-                        .WithMany()
-                        .HasForeignKey("applicationUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("eKnjiznica.Data.Entities.OrderItem", b =>
-                {
-                    b.HasOne("eKnjiznica.Data.Entities.Order", "Order")
-                        .WithMany("Items")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("eKnjiznica.Data.Entities.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 

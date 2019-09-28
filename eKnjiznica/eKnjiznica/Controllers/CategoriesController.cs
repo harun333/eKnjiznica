@@ -3,12 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using eKnjiznica.Data.Entities;
 using eKnjiznica.Data.Repositories;
-using Microsoft.AspNetCore.Authorization;
 
 namespace eKnjiznica.Controllers
 {
-    [Authorize(Roles = "Admin")]
-
     public class CategoriesController : Controller
     {
         private readonly ICategoryRepository _repository;

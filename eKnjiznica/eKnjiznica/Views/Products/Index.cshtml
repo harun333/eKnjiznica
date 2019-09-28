@@ -1,10 +1,10 @@
 ﻿@model eKnjiznica.ViewModels.SearchViewModel
 @{
     ViewData["Title"] = "Index";
-    Layout = "~/Views/Shared/_LayoutClient.cshtml";
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<h1>Index</h1>
+
 @if (Model.IsAdmin)
 {
     <p>
@@ -12,52 +12,48 @@
     </p>
 }
 
-<div class="row">
-    <div class="col-lg-10 col-md-10 col-sm-10">
-    </div>
-    <div class="col-lg-2 col-md-2 col-sm-2">
-        <h3 style="color:#0026ff;font-family:'Arial Rounded MT';text-align:left"><span class="btn btn-info">@Html.ActionLink("Check Out", "CheckOut", "Cart")</span></h3>
-    </div>
-</div>
-<div class="row" style="margin-bottom:100px;">
-
-    @foreach (var item in Model.Products)
+<form asp-action="Index">
+    @foreach (var category in Model.Categories)
     {
-        <div class="col-lg-4 col-md-4" style="height:200px;margin-top:100px;">
-            @Html.DisplayFor(modelItem => item.Name)
-            <br />
-            @Html.DisplayFor(modelItem => item.Price)
-            <br />
-            @Html.DisplayFor(modelItem => item.Description)
-            <br />
-            <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-            @if (Model.IsAdmin)
-            {
-                <span> | </span>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a><span> | </span>
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            }
-            <h4>
-                <a class="btn btn-success btn-sm" href="@Url.Action("AddToCart","Cart", new { id = @item.Id })"><i class="fa fa-shopping-cart" style="font-size:24px"></i> Add to Cart</a>
-            </h4>
-        </div>
-    }
-    <form asp-action="Index">
-        @foreach (var category in Model.Categories)
-        {
-            <div class="form-group">
-                <label>
-                    @category.Name:
-                </label>
-                <input type="checkbox" name="Category-@category.Id" />
-            </div>
-        }
         <div class="form-group">
-            <input type="submit" value="Search" class="btn btn-primary" />
+            <label>
+                @category.Name:
+            </label>
+            <input type="checkbox" name="Category-@category.Id" />
         </div>
-    </form>
-    @if (Model.IsAdmin)
-    {
-        <div> <a asp-controller="Admin" asp-action="Index">Go Back</a></div>
     }
-</div>
+    <div class="form-group">
+        <input type="submit" value="Search" class="btn btn-primary" />
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Products
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Products)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                @if (Model.IsAdmin)
+                {
+                    <span> | </span>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a><span> | </span>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                }
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+
