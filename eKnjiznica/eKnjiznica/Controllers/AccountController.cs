@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using eKnjiznica.Data;
+using eKnjiznica.Data.Entities;
 using eKnjiznica.Models;
 using eKnjiznica.ViewModels;
 using Microsoft.AspNetCore.Authentication;
@@ -17,15 +19,17 @@ namespace eKnjiznica.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<AccountController> _logger;
-
+        private readonly ApplicationDbContext _context;
         public AccountController(SignInManager<ApplicationUser> signInManager,
                                UserManager<ApplicationUser> userManager,
-                              ILogger<AccountController> logger)
+                              ILogger<AccountController> logger,
+                              ApplicationDbContext context)
 
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = logger;
+            _context = context;
         }
         public string ReturnUrl { get; set; }
         [TempData]
@@ -62,11 +66,11 @@ namespace eKnjiznica.Controllers
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var savedUser = await _userManager.FindByEmailAsync("Admin@hotmail.com");
+                var savedUser = await _userManager.FindByEmailAsync(model.Email);
 
                 var result = await _signInManager.PasswordSignInAsync(savedUser, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
-                {
+                {          
                     var user = await _userManager.FindByEmailAsync(model.Email);
                     if (await _userManager.IsInRoleAsync(user, "Admin"))
                         return RedirectToAction("Index", "Admin");
@@ -101,10 +105,22 @@ namespace eKnjiznica.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
+                
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    var user1 = await _userManager.FindByEmailAsync(model.Email);
+                    var client = new Client
+                    {
+
+                        Name = user1.UserName,
+                        Credit = 100,
+                        applicationUserId = user1.Id
+
+                    };
+                    _context.Clients.Add(client);
+                    _context.SaveChanges();
                     _logger.LogInformation("User created a new account with password.");
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     //var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);

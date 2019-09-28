@@ -8,9 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using eKnjiznica.Data;
 using eKnjiznica.Data.Entities;
 using eKnjiznica.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
+using eKnjiznica.Models;
 
 namespace eKnjiznica.Controllers
 {
+    [Authorize]
     public class ClientsController : Controller
     {
         private readonly IClientRepository _repository;
@@ -86,7 +89,7 @@ namespace eKnjiznica.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Credit")] Client client)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Credit,applicationUserId")] Client client)
         {
             if (id != client.Id)
             {
@@ -96,7 +99,7 @@ namespace eKnjiznica.Controllers
             if (ModelState.IsValid)
             {
                 try
-                {
+                {             
                     _repository.Update(client);
                     await _repository.SaveChangesAsync();
                 }
