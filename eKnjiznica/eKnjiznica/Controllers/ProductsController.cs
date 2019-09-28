@@ -10,6 +10,7 @@ using eKnjiznica.ViewModels;
 
 namespace eKnjiznica.Controllers
 {
+    [Authorize]
     public class ProductsController : Controller
     {
         private readonly IProductRepository _repository;
@@ -102,11 +103,37 @@ namespace eKnjiznica.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Price,Description")] Product product)
         {
             if (ModelState.IsValid)
             {
+     
                 _repository.Add(product);
+                //var vm = new ProductEditViewModel
+                //{
+                //    Product = product
+                //};
+                //var allCategories = await _categoryRepository.FindAllAsync();
+                //foreach (var category in allCategories)
+                //{
+                //    var model = new SelectViewModel
+                //    {
+                //        Id = category.Id,
+                //        DisplayName = category.Name,
+                //        Selected = false
+                //    };
+
+                //    vm.Categories.Add(model);
+                //}
+
+                //foreach (var selectedCategory in product.ProductCategories)
+                //{
+                //    var categorySelection = vm.Categories.FirstOrDefault(m => m.Id == selectedCategory.CategoryId);
+                //    if (categorySelection != null)
+                //    {
+                //        categorySelection.Selected = true;
+                //    }
+                //}
                 await _repository.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -160,7 +187,7 @@ namespace eKnjiznica.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Price,Description")] Product product)
         {
             if (id != product.Id)
             {
@@ -196,9 +223,9 @@ namespace eKnjiznica.Controllers
                         }
                     }
 
-                    _repository.Update(product);
+                    
                     _repository.SetCategoryRelationships(allRelationships);
-
+                    _repository.Update(product);
                     await _repository.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -243,6 +270,7 @@ namespace eKnjiznica.Controllers
             _repository.Remove(product);
             await _repository.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+
         }
 
         private bool ProductExists(int id)

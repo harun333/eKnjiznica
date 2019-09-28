@@ -1,7 +1,7 @@
 ﻿@model eKnjiznica.ViewModels.LoginViewModel
 @{
     ViewData["Title"] = "Index";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_LoginPartial.cshtml";
 }
 <div id="wrapper">
     <div class="vertical-align-wrap">
@@ -10,7 +10,6 @@
                 <div class="left">
                     <div class="content">
                         <div class="header">
-                            <div class="logo text-center"><img src="assets/img/logo-dark.png" alt="Klorofil Logo"></div>
                             <p class="lead">Login to your account</p>
                         </div>
                         <form class="form-auth-small" asp-action="Login" asp-controller="Account">
@@ -30,8 +29,10 @@
                             </div>
                             <div class="container-login100-form-btn">
 
-                                <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                <button class="login100-form-btn">
+
                                     Login
+
                                 </button>
 
                                 <a asp-action="Index" asp-controller="Home" style="margin-top:20px;">Go back and create an account</a>
@@ -43,9 +44,13 @@
                         </form>
                     </div>
                 </div>
+                <div class="right">
+                    <div class="overlay"></div>
+                    <div class="content text">
+                    </div>
+                </div>
                 <div class="clearfix"></div>
             </div>
         </div>
     </div>
 </div>
-
