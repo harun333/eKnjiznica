@@ -24,6 +24,11 @@
                 <span asp-validation-for="Credit" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="applicationUserId" class="control-label"></label>
+                <input asp-for="applicationUserId" class="form-control" />
+                <span asp-validation-for="applicationUserId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
