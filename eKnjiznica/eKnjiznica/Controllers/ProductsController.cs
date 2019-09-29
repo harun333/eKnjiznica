@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using eKnjiznica.ViewModels;
+using eKnjiznica.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace eKnjiznica.Controllers
 {
@@ -15,13 +17,16 @@ namespace eKnjiznica.Controllers
     {
         private readonly IProductRepository _repository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ICartRepository _cart;
 
         public ProductsController(
             IProductRepository context,
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository,
+             ICartRepository cart)
         {
             _repository = context;
             _categoryRepository = categoryRepository;
+            _cart = cart;
         }
 
         public async Task<IActionResult> Index()
@@ -95,46 +100,43 @@ namespace eKnjiznica.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var vm = new ProductEditViewModel();
+
+            vm.Product = new Product();
+
+            var allCategories = await _categoryRepository.FindAllAsync();
+            foreach (var category in allCategories)
+            {
+                var model = new SelectViewModel
+                {
+                    Id = category.Id,
+                    DisplayName = category.Name,
+                    Selected = false
+                };
+
+                vm.Categories.Add(model);
+            }
+
+            return View(vm);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Price,Description")] Product product)
+        public async Task<IActionResult> Create([Bind("Name,Price,Description")] Product product)
         {
             if (ModelState.IsValid)
             {
-     
                 _repository.Add(product);
-                //var vm = new ProductEditViewModel
-                //{
-                //    Product = product
-                //};
-                //var allCategories = await _categoryRepository.FindAllAsync();
-                //foreach (var category in allCategories)
-                //{
-                //    var model = new SelectViewModel
-                //    {
-                //        Id = category.Id,
-                //        DisplayName = category.Name,
-                //        Selected = false
-                //    };
 
-                //    vm.Categories.Add(model);
-                //}
-
-                //foreach (var selectedCategory in product.ProductCategories)
-                //{
-                //    var categorySelection = vm.Categories.FirstOrDefault(m => m.Id == selectedCategory.CategoryId);
-                //    if (categorySelection != null)
-                //    {
-                //        categorySelection.Selected = true;
-                //    }
-                //}
                 await _repository.SaveChangesAsync();
+
+                await UpdateProductCategory(product);
+
+                await _repository.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
@@ -198,34 +200,15 @@ namespace eKnjiznica.Controllers
             {
                 try
                 {
-                    product = await _repository.FindOne(id);
+                    var savedProduct = await _repository.FindOne(id);
 
-                    if (product.ProductCategories.Count() > 0)
-                    {
-                        _repository.RemoveCategoryRelatiionships(product);
-                        await _repository.SaveChangesAsync();
-                    }
+                    savedProduct.Name = product.Name;
+                    savedProduct.Price = product.Price;
+                    savedProduct.Description = product.Description;
 
-                    var allCategories = await _categoryRepository.FindAllAsync();
-                    var allRelationships = new List<ProductCategory>();
-                    foreach (var category in allCategories)
-                    {
-                        if (Request.Form.ContainsKey("Category-" + category.Id))
-                        {
-                            if (Request.Form["Category-" + category.Id] == "on")
-                            {
-                                allRelationships.Add(new ProductCategory
-                                {
-                                    CategoryId = category.Id,
-                                    ProductId = product.Id
-                                });
-                            }
-                        }
-                    }
-
+                   await  UpdateProductCategory(savedProduct);
                     
-                    _repository.SetCategoryRelationships(allRelationships);
-                    _repository.Update(product);
+                    _repository.Update(savedProduct);
                     await _repository.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -242,6 +225,34 @@ namespace eKnjiznica.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
+        }
+
+        private async Task UpdateProductCategory(Product savedProduct)
+        {
+            if (savedProduct.ProductCategories != null && savedProduct.ProductCategories.Count() > 0)
+            {
+                _repository.RemoveCategoryRelatiionships(savedProduct);
+                await _repository.SaveChangesAsync();
+            }
+
+            var allCategories = await _categoryRepository.FindAllAsync();
+            var allRelationships = new List<ProductCategory>();
+            foreach (var category in allCategories)
+            {
+                if (Request.Form.ContainsKey("Category-" + category.Id))
+                {
+                    if (Request.Form["Category-" + category.Id] == "on")
+                    {
+                        allRelationships.Add(new ProductCategory
+                        {
+                            CategoryId = category.Id,
+                            ProductId = savedProduct.Id
+                        });
+                    }
+                }
+            }
+
+            _repository.SetCategoryRelationships(allRelationships);
         }
 
         [Authorize(Roles = "Admin")]
@@ -267,6 +278,11 @@ namespace eKnjiznica.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _repository.FindOne(id);
+            if (product.ProductCategories.Count() > 0)          
+                _repository.RemoveCategoryRelatiionships(product);
+
+            _cart.RemoveProductRelated(id);
+           
             _repository.Remove(product);
             await _repository.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

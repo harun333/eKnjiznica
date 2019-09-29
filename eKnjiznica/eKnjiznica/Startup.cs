@@ -62,6 +62,7 @@ namespace eKnjiznica
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<ICartRepository, CartRepository>();
             services.AddScoped<IMailService, NullMailService>();
         }
 

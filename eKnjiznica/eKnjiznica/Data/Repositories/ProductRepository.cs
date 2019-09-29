@@ -72,6 +72,8 @@ namespace eKnjiznica.Data.Repositories
             _context.Remove(product);
         }
 
+        
+
         public void RemoveCategoryRelatiionships(Product product)
         {
             foreach (var item in product.ProductCategories)

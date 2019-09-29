@@ -12,6 +12,7 @@ namespace eKnjiznica.Data.Repositories
         List<Client> FindAll();
         Task<List<Client>> FindAllAsync();
         Task<Client> FindOne(int id);
+        Task<Client> FindByApplicationId(string id);
         void Add(Client category);
         Task SaveChangesAsync();
         void Update(Client category);
@@ -44,6 +45,12 @@ namespace eKnjiznica.Data.Repositories
         public Task<List<Client>> FindAllAsync()
         {
             return _context.Clients.ToListAsync();
+        }
+
+        public Task<Client> FindByApplicationId(string id)
+        {
+            return _context.Clients
+                .Where(x => x.applicationUserId == id).FirstOrDefaultAsync();
         }
 
         public Task<Client> FindOne(int id)

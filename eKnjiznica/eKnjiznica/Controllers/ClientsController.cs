@@ -10,6 +10,8 @@ using eKnjiznica.Data.Entities;
 using eKnjiznica.Data.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using eKnjiznica.Models;
+using Microsoft.AspNetCore.Identity;
+using eKnjiznica.ViewModels;
 
 namespace eKnjiznica.Controllers
 {
@@ -17,10 +19,12 @@ namespace eKnjiznica.Controllers
     public class ClientsController : Controller
     {
         private readonly IClientRepository _repository;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ClientsController(IClientRepository context)
+        public ClientsController(IClientRepository repo, UserManager<ApplicationUser> userManager)
         {
-            _repository = context;
+            _repository = repo;
+            _userManager = userManager;
         }
 
         // GET: Clients
@@ -34,7 +38,9 @@ namespace eKnjiznica.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                var user = await _userManager.FindByEmailAsync(User.Identity.Name);
+                var currentClient = await _repository.FindByApplicationId(user.Id);
+                return View(currentClient);
             }
 
             var client = await _repository.FindOne(id.Value);
@@ -42,8 +48,15 @@ namespace eKnjiznica.Controllers
             {
                 return NotFound();
             }
+            var vm = new ClientViewModel
+            {
+                Clients = client,
+                IsAdmin = User.IsInRole("Admin")
+            };
 
-            return View(client);
+            return View(vm);
+
+            
         }
 
         // GET: Clients/Create
