@@ -137,34 +137,7 @@ namespace eKnjiznica.Controllers
                 await _repository.SaveChangesAsync();
 
                 await UpdateProductCategory(product);
-
-
-                //var vm = new ProductEditViewModel
-                //{
-                //    Product = product
-                //};
-                //var allCategories = await _categoryRepository.FindAllAsync();
-                //foreach (var category in allCategories)
-                //{
-                //    var model = new SelectViewModel
-                //    {
-                //        Id = category.Id,
-                //        DisplayName = category.Name,
-                //        Selected = false
-                //    };
-
-                //    vm.Categories.Add(model);
-                //}
-
-                //foreach (var selectedCategory in product.ProductCategories)
-                //{
-                //    var categorySelection = vm.Categories.FirstOrDefault(m => m.Id == selectedCategory.CategoryId);
-                //    if (categorySelection != null)
-                //    {
-                //        categorySelection.Selected = true;
-                //    }
-                //}
-
+              
                 await _repository.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));
