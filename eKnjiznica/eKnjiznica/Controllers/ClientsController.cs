@@ -48,15 +48,8 @@ namespace eKnjiznica.Controllers
             {
                 return NotFound();
             }
-            var vm = new ClientViewModel
-            {
-                Clients = client,
-                IsAdmin = User.IsInRole("Admin")
-            };
 
-            return View(vm);
-
-            
+            return View(client);
         }
 
         // GET: Clients/Create

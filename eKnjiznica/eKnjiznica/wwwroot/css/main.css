@@ -1046,6 +1046,7 @@ ul.activity-list > li {
       font-size: 18px;
       font-weight: 300; }
     .auth-box .right .overlay {
+
         position: absolute;
         top: 0;
         display: block;

@@ -125,15 +125,45 @@ namespace eKnjiznica.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Price,Description")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Price,Description")] Product product)
+
         {
             if (ModelState.IsValid)
             {
+     
                 _repository.Add(product);
+
 
                 await _repository.SaveChangesAsync();
 
                 await UpdateProductCategory(product);
+
+
+                //var vm = new ProductEditViewModel
+                //{
+                //    Product = product
+                //};
+                //var allCategories = await _categoryRepository.FindAllAsync();
+                //foreach (var category in allCategories)
+                //{
+                //    var model = new SelectViewModel
+                //    {
+                //        Id = category.Id,
+                //        DisplayName = category.Name,
+                //        Selected = false
+                //    };
+
+                //    vm.Categories.Add(model);
+                //}
+
+                //foreach (var selectedCategory in product.ProductCategories)
+                //{
+                //    var categorySelection = vm.Categories.FirstOrDefault(m => m.Id == selectedCategory.CategoryId);
+                //    if (categorySelection != null)
+                //    {
+                //        categorySelection.Selected = true;
+                //    }
+                //}
 
                 await _repository.SaveChangesAsync();
 
@@ -202,6 +232,7 @@ namespace eKnjiznica.Controllers
                 {
                     var savedProduct = await _repository.FindOne(id);
 
+
                     savedProduct.Name = product.Name;
                     savedProduct.Price = product.Price;
                     savedProduct.Description = product.Description;
@@ -209,6 +240,34 @@ namespace eKnjiznica.Controllers
                    await  UpdateProductCategory(savedProduct);
                     
                     _repository.Update(savedProduct);
+
+                    if (product.ProductCategories.Count() > 0)
+                    {
+                        _repository.RemoveCategoryRelatiionships(product);
+                        await _repository.SaveChangesAsync();
+                    }
+
+                    var allCategories = await _categoryRepository.FindAllAsync();
+                    var allRelationships = new List<ProductCategory>();
+                    foreach (var category in allCategories)
+                    {
+                        if (Request.Form.ContainsKey("Category-" + category.Id))
+                        {
+                            if (Request.Form["Category-" + category.Id] == "on")
+                            {
+                                allRelationships.Add(new ProductCategory
+                                {
+                                    CategoryId = category.Id,
+                                    ProductId = product.Id
+                                });
+                            }
+                        }
+                    }
+
+                    
+                    _repository.SetCategoryRelationships(allRelationships);
+                    _repository.Update(product);
+
                     await _repository.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
